@@ -88,7 +88,7 @@ int main(int arc, char **argv) {
     index.glin_bulk_load(base_ptrs, error_bound, "z", -180.0, -180.0, 0.0000005, 0.0000005, pieces);
     sw.stop();
 
-    printf("Bulk load %f\n", sw.ms());
+    printf("Bulk load %f total segs: %lu\n", sw.ms(), total_segs);
 
     size_t total_xsects = 0;
     sw.start();
@@ -96,6 +96,7 @@ int main(int arc, char **argv) {
 #pragma omp parallel
     {
 #pragma omp  for reduction(+:total_xsects)
+
         for (auto &q: queries) {
             auto coords = q->getCoordinates();
             std::vector<geos::geom::Geometry *> find_result;
@@ -124,20 +125,19 @@ int main(int arc, char **argv) {
             find_result.clear();
             index.glin_find(query, "z", -180.0, -180.0, 0.0000005, 0.0000005, pieces, find_result, count_filter);
 
-            for (size_t i = 0; i < coords->size() - 1; i++) {
+            for (size_t i = 0; i < coords->size() - 1; i++) { // map2
                 auto x1 = coords->getAt(i).x;
                 auto y1 = coords->getAt(i).y;
                 auto x2 = coords->getAt(i + 1).x;
                 auto y2 = coords->getAt(i + 1).y;
                 geos::geom::LineSegment l(x1, y1, x2, y2);
-                for (auto *g: find_result) {
+                for (auto *g: find_result) { // map 1
                     total_xsects += CalculateIntersections(g, l);
                 }
             }
         }
     }
     sw.stop();
-
-    printf("Total xsect: %zu\n", total_xsects.load());
+    printf("Total xsect: %zu\n", total_xsects);
     printf("Search time %f\n", sw.ms());
 }
