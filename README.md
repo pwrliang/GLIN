@@ -19,7 +19,7 @@ This paper introduces GLIN, a generic learned index for spatial range queries on
 - test: tests related to GLIN-customized ALEX recursive model and GLIN's function
 
 ## Dependencies 
-- GEOS: brew install geos
+- GEOS: brew install geos (geos-3.11.0)
 - BOOST C++ library : brew install boost
 
 ## Build and Run test
